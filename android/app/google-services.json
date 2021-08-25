@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "213187381487",
+    "firebase_url": "https://ewallet-f7111-default-rtdb.firebaseio.com",
+    "project_id": "ewallet-f7111",
+    "storage_bucket": "ewallet-f7111.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:213187381487:android:514ffc646b9beb0279f31a",
+        "android_client_info": {
+          "package_name": "com.aries.identifyapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "213187381487-rn05ladld9s358ct0l9d5ih887d8dn3e.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCQPa_mS3rNNL3OmOKIYc1FDsO9N3iLWew"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "213187381487-rn05ladld9s358ct0l9d5ih887d8dn3e.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
