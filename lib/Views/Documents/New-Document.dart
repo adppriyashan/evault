@@ -2,9 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:identifyapp/Controllers/Documents/DocumentValidation.dart';
 import 'package:identifyapp/Models/Colors.dart';
-import 'package:identifyapp/Models/Images.dart';
 import 'package:identifyapp/Models/Utils.dart';
-import 'package:multi_select_flutter/multi_select_flutter.dart';
 
 class NewDocument extends StatefulWidget {
   @override

@@ -42,6 +42,7 @@ class AuthController {
         .then((value) async {
       await _databaseRef.child('users').child(value.user!.uid).set({
         'name': data['name'],
+        'email': data['email'],
         'mobile': data['mobile'],
       });
 
