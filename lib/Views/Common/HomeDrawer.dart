@@ -41,7 +41,7 @@ class _HomeDrawerState extends State<HomeDrawer> {
                   width: 70.0,
                   child: ClipOval(
                     child: Image.network(
-                      'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTt-JmDfLz7ErRiTZ9vIme55A9JGQqdx8qJ_xQ_lB2UIqGAFELpsKQQ8xuTSrlqrly-tSQ&usqp=CAU',
+                      'https://www.nicepng.com/png/detail/128-1280406_view-user-icon-png-user-circle-icon-png.png',
                       fit: BoxFit.cover,
                     ),
                   ),

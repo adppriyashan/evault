@@ -1,8 +1,13 @@
+import 'dart:convert';
+import 'dart:io';
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:identifyapp/Controllers/Documents/DocumentsController.dart';
 import 'package:identifyapp/Models/Colors.dart';
+import 'package:identifyapp/Models/Utils.dart';
 import 'package:identifyapp/Views/Documents/New-Document.dart';
-import 'package:syncfusion_flutter_gauges/gauges.dart';
 
 class Documents extends StatefulWidget {
   Documents({Key? key}) : super(key: key);
@@ -18,6 +23,8 @@ class _DocumentsState extends State<Documents> {
   void initState() {
     super.initState();
   }
+
+  DocumentsController _documentsController = DocumentsController();
 
   @override
   Widget build(BuildContext context) {
@@ -55,7 +62,9 @@ class _DocumentsState extends State<Documents> {
                         await showDialog(
                           context: context,
                           builder: (_) => NewDocument(),
-                        ).then((onValue) {});
+                        ).then((onValue) {
+                          setState(() {});
+                        });
                       },
                       child: Icon(
                         Icons.add,
@@ -69,19 +78,26 @@ class _DocumentsState extends State<Documents> {
             Flexible(
                 child: Padding(
               padding: EdgeInsets.only(bottom: 5.0),
-              child: ListView(
-                children: [
-                  getNotification(
-                      "https://5.imimg.com/data5/NH/AF/AC/SELLER-81442233/birth-certificate-500x500.png",
-                      'Birth Certificate'),
-                  getNotification(
-                      "https://upload.wikimedia.org/wikipedia/commons/b/b3/Polish_id_card_2019.jpg",
-                      'National Identity Card'),
-                  getNotification(
-                      "https://upload.wikimedia.org/wikipedia/commons/d/dd/Sri_Lankan_Passport.jpg",
-                      'Passport'),
-                ],
-              ),
+              child: FutureBuilder<List<dynamic>>(
+                  future: _documentsController.getDocuments(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.done) {
+                      if (snapshot.data!.length > 0) {
+                        return ListView(
+                            children: snapshot.data!
+                                .map((data) => getNotification(data))
+                                .toList());
+                      } else {
+                        return Center(
+                          child: Text('No Documents Found'),
+                        );
+                      }
+                    } else {
+                      return Center(
+                        child: CircularProgressIndicator(),
+                      );
+                    }
+                  }),
             ))
           ],
         ),
@@ -89,7 +105,20 @@ class _DocumentsState extends State<Documents> {
     ));
   }
 
-  getNotification(String imgUrl, String title) {
+  Widget getNotification(data) {
+    String title = "";
+    String subtitle = "";
+    late String _image;
+
+    Utils.docs.forEach((element) {
+      if (element['id'] == data['type']) {
+        title = element['name'];
+        if (element['hasNumber'] == true) {
+          subtitle = data['data'];
+        }
+      }
+    });
+
     return Container(
       margin: EdgeInsets.only(left: 5.0, right: 5.0, top: 10.0),
       decoration: BoxDecoration(
@@ -100,7 +129,7 @@ class _DocumentsState extends State<Documents> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             CircleAvatar(
-              backgroundImage: NetworkImage(imgUrl),
+              backgroundImage: MemoryImage(base64Decode(data['image1'])),
             )
           ],
         ),
@@ -112,30 +141,24 @@ class _DocumentsState extends State<Documents> {
               fontSize: 13.0),
         ),
         subtitle: Text(
-          '24th of January'.toUpperCase(),
+          subtitle.toUpperCase(),
           style: GoogleFonts.openSans(
               color: UtilColors.primaryColor,
               fontWeight: FontWeight.w600,
               fontSize: 10.0),
         ),
-        trailing: ToggleButtons(
-          color: UtilColors.primaryColor,
-          fillColor: UtilColors.primaryColor,
-          selectedColor: UtilColors.whiteColor,
-          children: <Widget>[
-            Icon(
-              Icons.edit,
-              size: 20.0,
-            ),
-            Icon(
-              Icons.delete,
-              size: 20.0,
-            ),
-          ],
-          onPressed: (int index) {
-            setState(() {});
+        trailing: GestureDetector(
+          onTap: () async {
+            try {
+              Utils.showLoader(context);
+              await _documentsController.deleteDocument(data['id']);
+              Utils.hideLoader();
+              setState(() {});
+            } catch (e) {
+              Utils.showToast('Something Wrong');
+            }
           },
-          isSelected: [false, false],
+          child: Icon(Icons.delete, size: 20.0, color: UtilColors.redColor),
         ),
       ),
     );

@@ -198,8 +198,8 @@ class NewRequestState extends State<NewRequest> {
                                             .doRequest(
                                                 _emailController.text, docs)
                                             .then((value) {
+                                          Navigator.pop(context);
                                           if (value == true) {
-                                            Navigator.pop(context);
                                             setState(() {
                                               _emailController.text = '';
                                               docs.clear();

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:identifyapp/Controllers/Documents/DocumentValidation.dart';
 import 'package:identifyapp/Models/Colors.dart';
 import 'package:identifyapp/Models/User.dart';
 import 'package:identifyapp/Views/Widgets/PopUps/PopUpLoading.dart';
@@ -10,6 +11,50 @@ class Utils {
   //Fonts Start
   static double smallFonts = 10.0;
   static double xlFonts = 30.0;
+
+  static List<Map<String, dynamic>> docs = [
+    {"id": 0, "name": "None", "hasNumber": true, "fieldName": ""},
+    {
+      "id": 1,
+      "name": "National Identity Card",
+      "hasNumber": true,
+      "fieldName": "NIC Number",
+      "validate": true,
+      "pattern": DocumentValidation.patternNIC
+    },
+    {
+      "id": 2,
+      "name": "Birth Certificate",
+      "hasNumber": false,
+      "fieldName": "",
+      "validate": false
+    },
+    {
+      "id": 3,
+      "name": "Passport",
+      "hasNumber": true,
+      "fieldName": "Passport Number",
+      "validate": true,
+      "pattern": DocumentValidation.patternPassport
+    },
+    {
+      "id": 4,
+      "name": "Covid Vaccinated Report",
+      "hasNumber": false,
+      "fieldName": "",
+      "validate": false
+    },
+  ];
+
+  static String getDocumentName(key) {
+    late String record = "";
+    docs.forEach((element) {
+      if (element['id'] == key) {
+        record = element['name'];
+      }
+    });
+    return record;
+  }
   //Fonts End
 
   static late Size displaySize;
@@ -76,8 +121,7 @@ class Utils {
         ));
   }
 
-    static InputDecoration getDefaultDropdownInputDecoration(
-      String label) {
+  static InputDecoration getDefaultDropdownInputDecoration(String label) {
     return InputDecoration(
         labelText: label,
         errorStyle: TextStyle(fontSize: 11, color: Colors.red),

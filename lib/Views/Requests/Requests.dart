@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:identifyapp/Controllers/Requests/RequestsController.dart';
 import 'package:identifyapp/Models/Colors.dart';
+import 'package:identifyapp/Models/Utils.dart';
+import 'package:identifyapp/Views/Common/ImageView.dart';
 import 'package:identifyapp/Views/Requests/New-Request.dart';
 import 'package:syncfusion_flutter_gauges/gauges.dart';
 
@@ -12,7 +15,7 @@ class Requests extends StatefulWidget {
 }
 
 class _RequestsState extends State<Requests> {
-  final _scaffoldKey = GlobalKey<ScaffoldState>();
+  RequestsController _requestController = RequestsController();
 
   @override
   void initState() {
@@ -55,7 +58,9 @@ class _RequestsState extends State<Requests> {
                         await showDialog(
                           context: context,
                           builder: (_) => NewRequest(),
-                        ).then((onValue) {});
+                        ).then((onValue) {
+                          setState(() {});
+                        });
                       },
                       child: Icon(
                         Icons.add,
@@ -69,20 +74,26 @@ class _RequestsState extends State<Requests> {
             Flexible(
                 child: Padding(
               padding: EdgeInsets.only(bottom: 5.0),
-              child: ListView(
-                children: [
-                  getNotification(),
-                  getNotification(),
-                  getNotification(),
-                  getNotification(),
-                  getNotification(),
-                  getNotification(),
-                  getNotification(),
-                  getNotification(),
-                  getNotification(),
-                  getNotification(),
-                ],
-              ),
+              child: FutureBuilder<List<dynamic>>(
+                  future: _requestController.getNewRequestsFormMe(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.done) {
+                      if (snapshot.data!.length > 0) {
+                        return ListView(
+                            children: snapshot.data!
+                                .map((data) => getNotification(data))
+                                .toList());
+                      } else {
+                        return Center(
+                          child: Text('No Documents Found'),
+                        );
+                      }
+                    } else {
+                      return Center(
+                        child: CircularProgressIndicator(),
+                      );
+                    }
+                  }),
             ))
           ],
         ),
@@ -90,7 +101,17 @@ class _RequestsState extends State<Requests> {
     ));
   }
 
-  getNotification() {
+  Widget getNotification(data) {
+    Color _color = UtilColors.primaryColor;
+
+    if (data['status'] == 1) {
+      _color = UtilColors.greyColor;
+    } else if (data['status'] == 2) {
+      _color = UtilColors.greenColor;
+    } else {
+      _color = UtilColors.redColor;
+    }
+
     return Container(
       margin: EdgeInsets.only(left: 5.0, right: 5.0, top: 10.0),
       decoration: BoxDecoration(
@@ -100,21 +121,26 @@ class _RequestsState extends State<Requests> {
         leading: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            CircleAvatar(
-              backgroundImage: NetworkImage(
-                  "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTt-JmDfLz7ErRiTZ9vIme55A9JGQqdx8qJ_xQ_lB2UIqGAFELpsKQQ8xuTSrlqrly-tSQ&usqp=CAU"),
+            Icon(
+              Icons.notifications,
+              color: _color,
             )
           ],
         ),
         title: Text(
-          'Birth Certificate'.toUpperCase(),
+          (Utils.getDocumentName(data['type']).length < 18)
+              ? Utils.getDocumentName(data['type']).toUpperCase()
+              : Utils.getDocumentName(data['type'])
+                      .toUpperCase()
+                      .substring(0, 18) +
+                  '..',
           style: GoogleFonts.openSans(
               color: UtilColors.primaryColor,
               fontWeight: FontWeight.w600,
               fontSize: 15.0),
         ),
         subtitle: Text(
-          'From Pasindu Priyashan'.toUpperCase(),
+          data['email'],
           style: GoogleFonts.openSans(
               color: UtilColors.primaryColor,
               fontWeight: FontWeight.w600,
@@ -128,14 +154,60 @@ class _RequestsState extends State<Requests> {
             Icon(
               Icons.visibility,
               size: 20.0,
+              color: (data['status'] == 2)
+                  ? UtilColors.primaryColor
+                  : UtilColors.greyColor,
             ),
             Icon(
               Icons.delete,
               size: 20.0,
+              color: UtilColors.redColor,
             ),
           ],
-          onPressed: (int index) {
-            setState(() {});
+          onPressed: (int index) async {
+            if (index == 0) {
+              if (data['status'] == 2) {
+                Utils.showLoader(context);
+                await _requestController
+                    .getDocument(data['to'].toString(), data['id'].toString(),
+                        data['type'].toString())
+                    .then((value) {
+                  Utils.hideLoaderCurrrent(context);
+                  if (value.length > 0) {
+                    List<Map<String, dynamic>> images = [];
+
+                    images
+                        .add({'id': 1, 'image': value.values.first['image1']});
+
+                    if (value.values.first['image2'].toString().isNotEmpty) {
+                      images.add(
+                          {'id': 2, 'image': value.values.first['image2']});
+                    }
+
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) => ImageView(
+                                  galleryItems: images,
+                                  title: (value.values.first['data'] != null)
+                                      ? value.values.first['data']
+                                      : Utils.getDocumentName(
+                                          value.values.first['type']),
+                                )));
+                  } else {
+                    Utils.showToast('Document Deleted By User. Please Retry.');
+                  }
+                });
+              }
+            } else {
+              await _requestController
+                  .removeRequest(data['to'], data['id'])
+                  .then((value) {
+                setState(() {
+                  Utils.showToast("Request Removed");
+                });
+              });
+            }
           },
           isSelected: [false, false],
         ),
